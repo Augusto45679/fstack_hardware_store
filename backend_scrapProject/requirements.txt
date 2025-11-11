@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+gspread
+pandas
+google-auth
+google-auth-oauthlib
