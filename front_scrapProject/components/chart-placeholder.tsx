@@ -2,7 +2,7 @@ interface ChartPlaceholderProps {
   title?: string
   height?: number
 }
-
+//TODO: Hacer endpoint en python con el historico de precios y armar con una libreria el grafico y fetchear acá
 export function ChartPlaceholder({ title = "Price History", height = 300 }: ChartPlaceholderProps) {
   return (
     <div
