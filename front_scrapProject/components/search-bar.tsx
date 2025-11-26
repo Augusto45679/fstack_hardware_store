@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface SearchBarProps {
   placeholder?: string
@@ -11,10 +11,31 @@ interface SearchBarProps {
 
 export function SearchBar({ placeholder = "Search hardware...", onSearch }: SearchBarProps) {
   const [query, setQuery] = useState("")
+  // Simple debounce implementation inside component to avoid dependency issues if hook doesn't exist
+  const [debouncedQuery, setDebouncedQuery] = useState(query)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query)
+    }, 300)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [query])
+
+  useEffect(() => {
+    if (onSearch) {
+      onSearch(debouncedQuery)
+    }
+  }, [debouncedQuery, onSearch])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSearch?.(query)
+    // Trigger immediately on submit
+    if (onSearch) {
+      onSearch(query)
+    }
   }
 
   return (

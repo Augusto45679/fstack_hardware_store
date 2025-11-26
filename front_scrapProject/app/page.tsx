@@ -1,18 +1,67 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { SearchBar } from "@/components/search-bar"
-import { CategoryCard } from "@/components/category-card"
-import { categories } from "@/data/mock-data"
+import { KPICards } from "@/components/dashboard/kpi-cards"
+import { ProductGrid } from "@/components/product/product-grid"
+import { api, GlobalStats, ProductCount, Product } from "@/lib/api"
+import { toast } from "sonner"
 
 export default function Home() {
+  const [stats, setStats] = useState<GlobalStats | null>(null)
+  const [count, setCount] = useState<ProductCount | null>(null)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loadingStats, setLoadingStats] = useState(true)
+  const [loadingProducts, setLoadingProducts] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [statsData, countData] = await Promise.all([
+          api.getGlobalStats(),
+          api.getProductCount(),
+        ])
+        setStats(statsData)
+        setCount(countData)
+      } catch (error) {
+        console.error("Failed to fetch stats:", error)
+        toast.error("Failed to load dashboard statistics")
+      } finally {
+        setLoadingStats(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoadingProducts(true)
+      try {
+        if (searchQuery) {
+          const response = await api.searchProducts({ q: searchQuery, limit: 20 })
+          setProducts(response.data)
+        } else {
+          // If no search query, fetch all (or a default set)
+          const data = await api.getAllProducts()
+          setProducts(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch products:", error)
+        toast.error("Failed to load products")
+      } finally {
+        setLoadingProducts(false)
+      }
+    }
+
+    fetchProducts()
+  }, [searchQuery])
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
-    // TODO: Implement search functionality
   }
 
   return (
@@ -21,9 +70,9 @@ export default function Home() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-16 sm:py-24 bg-gradient-to-b from-muted to-background">
+        <section className="py-12 sm:py-16 bg-gradient-to-b from-muted to-background">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
+            <div className="text-center mb-8">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 text-balance">
                 Compare hardware prices <span className="text-primary">instantly</span>
               </h1>
@@ -37,85 +86,28 @@ export default function Home() {
               <SearchBar onSearch={handleSearch} />
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center pt-8 border-t border-border">
-              <div>
-                <div className="text-3xl font-bold text-primary">50K+</div>
-                <p className="text-sm text-muted-foreground">Products tracked</p>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-primary">100+</div>
-                <p className="text-sm text-muted-foreground">Retailers</p>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-primary">2yr</div>
-                <p className="text-sm text-muted-foreground">Price history</p>
-              </div>
+            {/* KPI Cards */}
+            <div className="mt-8">
+              <KPICards stats={stats} count={count} loading={loadingStats} />
             </div>
           </div>
         </section>
 
-        {/* Featured Categories */}
-        <section className="py-16 sm:py-24">
+        {/* Product List Section */}
+        <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Featured Categories</h2>
-              <p className="text-lg text-muted-foreground">Browse the most popular hardware categories</p>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold mb-2">
+                {searchQuery ? "Search Results" : "All Products"}
+              </h2>
+              <p className="text-muted-foreground">
+                {searchQuery
+                  ? `Showing results for "${searchQuery}"`
+                  : "Browse our complete catalog of hardware components"}
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              {categories.map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  icon={category.icon}
-                  title={category.name}
-                  subtitle={category.subtitle}
-                  href={`/categories/${category.id}`}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* How It Works */}
-        <section className="py-16 sm:py-24 bg-muted">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">How It Works</h2>
-              <p className="text-lg text-muted-foreground">Get started in three simple steps</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                {
-                  step: 1,
-                  title: "Choose a Product",
-                  description: "Browse or search for any hardware component you are interested in.",
-                  icon: "🔍",
-                },
-                {
-                  step: 2,
-                  title: "Compare Prices",
-                  description: "See real-time prices from multiple retailers in one place.",
-                  icon: "⚖️",
-                },
-                {
-                  step: 3,
-                  title: "See Historic Data",
-                  description: "Track price trends over time to find the best deals.",
-                  icon: "📈",
-                },
-              ].map((item) => (
-                <div
-                  key={item.step}
-                  className="bg-card border border-border rounded-lg p-6 text-center hover:border-primary transition-colors"
-                >
-                  <div className="text-5xl mb-4">{item.icon}</div>
-                  <div className="text-lg font-semibold mb-2">{item.title}</div>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                </div>
-              ))}
-            </div>
+            <ProductGrid products={products} loading={loadingProducts} />
           </div>
         </section>
       </main>
