@@ -1,6 +1,6 @@
 # Fullstack Hardware Store Scraper & Comparator
 
-Este proyecto es una aplicación fullstack diseñada para scrapear, almacenar y comparar precios de productos de ferretería de diferentes tiendas. El objetivo es proporcionar una herramienta para analizar variaciones de precios y encontrar las mejores ofertas.
+Este proyecto es una aplicación fullstack diseñada para scrapear, almacenar y comparar precios de productos de hardware de diferentes tiendas. El objetivo es proporcionar una herramienta para analizar variaciones de precios y encontrar las mejores ofertas.
 
 ## Estado Actual del Proyecto
 
