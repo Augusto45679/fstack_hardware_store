@@ -7,10 +7,10 @@ import pytest
 
 # Mock data
 MOCK_PRODUCTS = [
-    {"product_id": 1, "product_name": "GPU A", "price": 100, "store": "Store 1", "link": "http://store1.com", "date": "2023-01-01"},
-    {"product_id": 1, "product_name": "GPU A", "price": 90, "store": "Store 1", "link": "http://store1.com", "date": "2023-01-02"},
-    {"product_id": 1, "product_name": "GPU A", "price": 95, "store": "Store 2", "link": "http://store2.com", "date": "2023-01-02"},
-    {"product_id": 2, "product_name": "CPU B", "price": 200, "store": "Store 1", "link": "http://store1.com", "date": "2023-01-01"},
+    {"product_id": "1", "product_name": "GPU A", "price": 100, "store": "Store 1", "link": "http://store1.com", "date": "2023-01-01"},
+    {"product_id": "1", "product_name": "GPU A", "price": 90, "store": "Store 1", "link": "http://store1.com", "date": "2023-01-02"},
+    {"product_id": "1", "product_name": "GPU A", "price": 95, "store": "Store 2", "link": "http://store2.com", "date": "2023-01-02"},
+    {"product_id": "2", "product_name": "CPU B", "price": 200, "store": "Store 1", "link": "http://store1.com", "date": "2023-01-01"},
 ]
 
 # Mock Service
@@ -26,7 +26,7 @@ mock_service.get_product_count.return_value = 4
 # Let's mock the service methods to test the router wiring first.
 
 mock_service.get_product_history.return_value = {
-    "product_id": 1,
+    "product_id": "1",
     "product_name": "GPU A",
     "history": [
         {"date": "2023-01-01", "price": 100, "store": "Store 1"},
@@ -36,7 +36,7 @@ mock_service.get_product_history.return_value = {
 }
 
 mock_service.get_product_comparison.return_value = {
-    "product_id": 1,
+    "product_id": "1",
     "product_name": "GPU A",
     "comparison": [
         {"store": "Store 1", "price": 90, "link": "http://store1.com"},
@@ -45,11 +45,10 @@ mock_service.get_product_comparison.return_value = {
 }
 
 mock_service.get_global_stats.return_value = {
-    "total_products": 4,
-    "lowest_price": 90,
-    "average_price": 121.25,
-    "cheapest_store": "Store 1",
-    "most_expensive_store": "Store 2"
+    "best_prices": [
+        {"product_name": "GPU A", "min_price": 90, "store": "Store 1"},
+        {"product_name": "CPU B", "min_price": 200, "store": "Store 1"}
+    ]
 }
 
 def override_get_sheets_service():
@@ -73,19 +72,19 @@ def test_get_product_history():
     response = client.get("/products/1/history")
     assert response.status_code == 200
     data = response.json()
-    assert data["product_id"] == 1
+    assert data["product_id"] == "1"
     assert len(data["history"]) == 3
 
 def test_get_product_comparison():
     response = client.get("/products/1/compare")
     assert response.status_code == 200
     data = response.json()
-    assert data["product_id"] == 1
+    assert data["product_id"] == "1"
     assert len(data["comparison"]) == 2
 
 def test_get_global_stats():
     response = client.get("/products/stats")
     assert response.status_code == 200
     data = response.json()
-    assert data["total_products"] == 4
-    assert data["lowest_price"] == 90
+    assert len(data["best_prices"]) == 2
+    assert data["best_prices"][0]["min_price"] == 90

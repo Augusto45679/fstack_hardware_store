@@ -2,7 +2,7 @@ from pydantic import BaseModel, HttpUrl
 from typing import Optional, List
 
 class Product(BaseModel):
-    product_id: int
+    product_id: str
     product_name: str
     price: int
     store: str
@@ -18,7 +18,7 @@ class PriceHistoryItem(BaseModel):
     store: str
 
 class ProductHistory(BaseModel):
-    product_id: int
+    product_id: str
     product_name: str
     history: List[PriceHistoryItem]
 
@@ -28,13 +28,21 @@ class ProductComparisonItem(BaseModel):
     link: HttpUrl
 
 class ProductComparison(BaseModel):
-    product_id: int
+    product_id: str
     product_name: str
     comparison: List[ProductComparisonItem]
 
+class BestPriceProduct(BaseModel):
+    product_name: str
+    min_price: int
+    store: str
+
 class GlobalStats(BaseModel):
-    total_products: int
-    lowest_price: int
-    average_price: float
-    cheapest_store: str
-    most_expensive_store: str
+    best_prices: List[BestPriceProduct]
+
+class ProductSearchResponse(BaseModel):
+    total_results: int
+    total_pages: int
+    current_page: int
+    limit: int
+    data: List[Product]
