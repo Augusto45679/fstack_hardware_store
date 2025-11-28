@@ -1,62 +1,121 @@
 # Fullstack Hardware Store Scraper & Comparator
 
-Este proyecto es una aplicación fullstack diseñada para scrapear, almacenar y comparar precios de productos de hardware de diferentes tiendas. El objetivo es proporcionar una herramienta para analizar variaciones de precios y encontrar las mejores ofertas.
+Una aplicación fullstack moderna diseñada para scrapear, almacenar y comparar precios de hardware de computación de múltiples tiendas argentinas (como Compragamer y Mercado Libre). El sistema permite a los usuarios buscar productos, ver historiales de precios y encontrar las mejores ofertas.
 
-## Estado Actual del Proyecto
+## 🚀 Características Principales
 
-El proyecto se encuentra en desarrollo activo. A continuación se detalla lo que se ha implementado hasta el momento:
+- **Scraping Automatizado**: Extracción de datos de productos e imágenes utilizando **Scrapy**.
+- **Gestión de Imágenes Inteligente**: Integración con **Cloudinary** para alojamiento de imágenes con detección de duplicados.
+- **Búsqueda Avanzada**: API RESTful con soporte para búsqueda por texto, filtros de precio, tienda y paginación.
+- **Historial de Precios**: Seguimiento de la evolución de precios a lo largo del tiempo.
+- **Comparación de Productos**: Herramientas para comparar el mismo producto entre diferentes vendedores.
+- **Interfaz Moderna**: Frontend desarrollado con **Next.js 16** y **Shadcn/UI**, con soporte para modo oscuro y diseño responsivo.
 
-### Arquitectura
+## 🛠 Tech Stack
 
-El sistema se divide en dos componentes principales:
+### Backend (`backend_scrapProject`)
+- **Framework**: FastAPI
+- **Base de Datos**: MongoDB (Motor driver para async)
+- **Procesamiento de Datos**: Pandas
+- **Lenguaje**: Python 3.10+
 
-1.  **Backend (`backend_scrapProject`)**:
-    *   Construido con **FastAPI**.
-    *   Actúa como la API RESTful que sirve los datos al frontend.
-    *   **Integración con Google Sheets**: Utiliza Google Sheets como base de datos principal para persistir la información de los productos scrapeados.
-    *   **Endpoints Implementados**:
-        *   `GET /products`: Listado de productos con paginación.
-        *   `GET /products/search`: Búsqueda avanzada de productos por texto, filtros de precio y tienda.
-        *   `GET /products/{product_id}`: Detalles de un producto específico.
-        *   `GET /products/{product_id}/history`: Historial de precios de un producto para análisis temporal.
-        *   `GET /products/{product_id}/compare`: Comparación de precios del mismo producto en diferentes tiendas.
-        *   `GET /products/stats`: Estadísticas globales (ej. mejores precios).
-    *   **Lógica de Negocio**: Normalización de datos, manejo de errores robusto y validación con Pydantic.
+### Frontend (`front_scrapProject`)
+- **Framework**: Next.js 16 (App Router)
+- **Librería UI**: React 19
+- **Estilos**: TailwindCSS
+- **Componentes**: Shadcn/UI
+- **Gráficos**: Recharts
+- **Iconos**: Lucide React
 
-2.  **Frontend (`front_scrapProject`)**:
-    *   Construido con **Next.js**.
-    *   (En desarrollo) Interfaz de usuario para visualizar los productos, realizar búsquedas y ver gráficas de historial de precios.
+### Scraper
+- **Framework**: Scrapy
+- **Almacenamiento de Imágenes**: Cloudinary API
 
-### Características Principales
+## 📋 Prerrequisitos
 
-*   **Scraping y Datos**: (Mencionar aquí si el scraper está integrado o es un proceso separado, por ahora asumimos que alimenta la hoja de cálculo).
-*   **Comparación de Precios**: Lógica para identificar el mismo producto en diferentes fuentes y comparar sus costos.
-*   **Historial**: Seguimiento de la evolución de precios en el tiempo.
-*   **API Documentada**: Acceso a la documentación automática de la API vía Swagger UI (`/docs`) al ejecutar el backend.
+- Python 3.10 o superior
+- Node.js 18 o superior
+- MongoDB (corriendo localmente o cluster de Atlas)
 
-## Cómo Ejecutar
+## ⚙️ Instalación y Ejecución
 
-### Backend
+### 1. Configuración del Backend
 
-1.  Navegar a `backend_scrapProject`.
-2.  Instalar dependencias: `pip install -r requirements.txt`.
-3.  Ejecutar el servidor:
-    ```bash
-    uvicorn app.main:app --reload
-    ```
+Navega al directorio del backend:
+```bash
+cd backend_scrapProject
+```
 
-### Frontend
+Crea un entorno virtual y actívalo:
+```bash
+# Windows
+python -m venv venv
+.\venv\Scripts\activate
 
-1.  Navegar a `front_scrapProject`.
-2.  Instalar dependencias: `npm install`.
-3.  Ejecutar el servidor de desarrollo:
-    ```bash
-    npm run dev
-    ```
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
+```
 
-## Próximos Pasos
+Instala las dependencias:
+```bash
+pip install -r requirements.txt
+```
 
-*   Finalizar la implementación de la interfaz de usuario en Next.js.
-*   Refinar los scrapers para mayor cobertura de tiendas.
-*   Mejorar la visualización de datos (gráficos de historial).
-*   Implementar autenticación de usuarios (si aplica).
+Configura las variables de entorno (crea un archivo `.env` en `backend_scrapProject`):
+```env
+MONGO_URI=mongodb://localhost:27017
+MONGO_DATABASE=hardware_db
+MONGO_COLLECTION=products
+# Credenciales de Cloudinary (si vas a correr los scrapers)
+CLOUDINARY_CLOUD_NAME=tu_cloud_name
+CLOUDINARY_API_KEY=tu_api_key
+CLOUDINARY_API_SECRET=tu_api_secret
+```
+
+Ejecuta el servidor de desarrollo:
+```bash
+uvicorn app.main:app --reload
+```
+El backend estará disponible en `http://localhost:8000`.
+Documentación interactiva (Swagger UI): `http://localhost:8000/docs`.
+
+### 2. Configuración del Frontend
+
+Navega al directorio del frontend:
+```bash
+cd front_scrapProject
+```
+
+Instala las dependencias:
+```bash
+npm install
+```
+
+Ejecuta el servidor de desarrollo:
+```bash
+npm run dev
+```
+La aplicación estará disponible en `http://localhost:3000`.
+
+## 📂 Estructura del Proyecto
+
+```
+/
+├── backend_scrapProject/    # API FastAPI y lógica de negocio
+│   ├── app/                 # Routers, modelos y configuración de DB
+│   └── ...
+├── front_scrapProject/      # Aplicación Next.js
+│   ├── components/          # Componentes UI reutilizables
+│   ├── app/                 # Páginas y layouts (App Router)
+│   └── ...
+└── README.md                # Documentación del proyecto
+```
+
+## 🔍 Endpoints Principales
+
+- `GET /products`: Listado paginado de productos.
+- `GET /products/search`: Búsqueda con filtros (query, min_price, max_price, store).
+- `GET /products/{id}`: Detalles de un producto.
+- `GET /products/{id}/history`: Historial de precios.
+- `GET /products/stats`: Estadísticas y mejores ofertas.
