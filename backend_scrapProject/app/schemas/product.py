@@ -1,16 +1,20 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, Field
 from typing import Optional, List
 
 class Product(BaseModel):
     product_id: str
     product_name: str
-    price: int
-    store: str
-    link: HttpUrl
-    date: Optional[str] = None # Assuming date is a string YYYY-MM-DD for now
+    price_current: Optional[int] = None
+    price_original: Optional[int] = None
+    image_url: Optional[str] = None
+    store_name: Optional[str] = None
+    product_url: Optional[str] = None
+    discount_percentage: Optional[float] = None
+    category: Optional[str] = None
     
     class Config:
         from_attributes = True
+        populate_by_name = True
 
 class PriceHistoryItem(BaseModel):
     date: str

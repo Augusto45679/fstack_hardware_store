@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { SearchBar } from "@/components/search-bar"
+import { SearchBar, SearchFilters } from "@/components/search-bar"
 import { KPICards } from "@/components/dashboard/kpi-cards"
 import { ProductGrid } from "@/components/product/product-grid"
+import { ProductPagination } from "@/components/product/product-pagination"
 import { api, GlobalStats, ProductCount, Product } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -15,7 +16,10 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([])
   const [loadingStats, setLoadingStats] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({ query: "" })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalResults, setTotalResults] = useState(0)
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -41,14 +45,21 @@ export default function Home() {
     const fetchProducts = async () => {
       setLoadingProducts(true)
       try {
-        if (searchQuery) {
-          const response = await api.searchProducts({ q: searchQuery, limit: 20 })
-          setProducts(response.data)
-        } else {
-          // If no search query, fetch all (or a default set)
-          const data = await api.getAllProducts()
-          setProducts(data)
-        }
+        // Always use search endpoint to handle pagination consistently
+        // Even without filters, it returns paginated "all products"
+        const response = await api.searchProducts({
+          q: searchFilters.query,
+          min_price: searchFilters.minPrice,
+          max_price: searchFilters.maxPrice,
+          store: searchFilters.store,
+          sort_by: searchFilters.sortBy,
+          page: currentPage,
+          limit: 20
+        })
+
+        setProducts(response.data)
+        setTotalPages(response.total_pages)
+        setTotalResults(response.total_results)
       } catch (error) {
         console.error("Failed to fetch products:", error)
         toast.error("Failed to load products")
@@ -58,10 +69,17 @@ export default function Home() {
     }
 
     fetchProducts()
-  }, [searchQuery])
+  }, [searchFilters, currentPage])
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
+  const handleSearch = useCallback((filters: SearchFilters) => {
+    setSearchFilters(filters)
+    setCurrentPage(1) // Reset to first page when filters change
+  }, [])
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    // Scroll to top of results
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -98,16 +116,28 @@ export default function Home() {
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
               <h2 className="text-3xl font-bold mb-2">
-                {searchQuery ? "Search Results" : "All Products"}
+                {searchFilters.query || searchFilters.minPrice || searchFilters.maxPrice || searchFilters.store || searchFilters.sortBy ? "Resultados de Búsqueda" : "Todos los Productos"}
               </h2>
               <p className="text-muted-foreground">
-                {searchQuery
-                  ? `Showing results for "${searchQuery}"`
-                  : "Browse our complete catalog of hardware components"}
+                {searchFilters.query
+                  ? `Mostrando resultados para "${searchFilters.query}"`
+                  : (searchFilters.minPrice || searchFilters.maxPrice || searchFilters.store || searchFilters.sortBy)
+                    ? "Mostrando productos filtrados"
+                    : "Explora nuestro catálogo completo de componentes de hardware"}
               </p>
             </div>
 
             <ProductGrid products={products} loading={loadingProducts} />
+
+            {/* Pagination */}
+            {!loadingProducts && (
+              <ProductPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalResults={totalResults}
+                onPageChange={handlePageChange}
+              />
+            )}
           </div>
         </section>
       </main>

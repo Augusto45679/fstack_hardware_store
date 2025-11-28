@@ -9,9 +9,13 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/product/${product.product_id}`}>
       <div className="group bg-card border border-border rounded-lg overflow-hidden hover:border-primary hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-        {/* Product Image Placeholder */}
+        {/* Product Image */}
         <div className="relative w-full h-48 bg-muted overflow-hidden flex items-center justify-center">
-          <span className="text-4xl">🖥️</span>
+          {product.image_url ? (
+            <img src={product.image_url} alt={product.product_name} className="w-full h-full object-contain" />
+          ) : (
+            <span className="text-4xl">🖥️</span>
+          )}
         </div>
 
         {/* Product Info */}
@@ -22,8 +26,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Price */}
           <div className="mt-auto mb-4">
-            <div className="text-2xl font-bold text-primary">${product.price}</div>
-            <div className="text-xs text-muted-foreground">in {product.store}</div>
+            <div className="text-2xl font-bold text-primary">${product.price_current}</div>
+            <div className="text-xs text-muted-foreground">in {product.store_name}</div>
           </div>
 
           {/* View History Button */}

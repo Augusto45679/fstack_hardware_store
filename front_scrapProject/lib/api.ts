@@ -7,10 +7,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 export interface Product {
     product_id: string;
     product_name: string;
-    price: number;
-    store: string;
-    link: string;
-    date?: string;
+    price_current: number;
+    price_original?: number;
+    image_url: string;
+    store_name: string;
+    product_url: string;
+    discount_percentage?: number;
+    category: string;
 }
 
 export interface PriceHistoryItem {
